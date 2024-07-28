@@ -3,10 +3,10 @@
         "version-number" : "5.17.1",
         "platforms" : {
             "windows" : {
-                    "binary-url" : "https://github.com/kpdl0527/yt_clipper/releases/download/v5.17.1u/yt_clipper.exe"
+                    "binary" : "https://github.com/kpdl0527/yt_clipper/releases/download/v5.17.1u/yt_clipper.exe"
             },
             "macos" : {
-                    "binary-url" : "https://github.com/kpdl0527/yt_clipper/releases/download/v5.17.1u/yt_clipper"
+                    "binary" : "https://github.com/kpdl0527/yt_clipper/releases/download/v5.17.1u/yt_clipper"
             }
         }
     }
