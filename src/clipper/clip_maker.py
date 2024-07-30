@@ -646,6 +646,60 @@ def getFfmpegVideoCodecH264(
     return video_codec_args, video_output_args
 
 
+def getFfmpegVideoCodecH265(
+  cbr: Optional[int],
+  mp: DictStrAny,
+  mps: DictStrAny,
+  qmax: int,
+  qmin: int,
+) -> Tuple[str, str]:
+  """Following recommendations from https://www.lighterra.com/papers/videoencodingh264"""
+  fps_arg = ""
+  if not mps["h264DisableReduceStutter"]:
+    if mps["minterpFPS"] is not None:
+      fps_arg = f'-r {mps["minterpFPS"]}'
+    elif not mp["isVariableSpeed"]:
+      fps_arg = f'-r ({mps["r_frame_rate"]}*{mp["speed"]})'
+
+  if mp["isVariableSpeed"]:
+    fps_arg = "-fps_mode vfr"
+
+  pixel_count = mps["width"] * mps["height"]
+
+  # The me_method and me_range have a fairly significant impact on encoding speed and could be tweaked
+  # Currently going with a high me_method (umh vs the default hex), and a moderate me_range (32 for higher resolutions vs the default 16)
+  me_range = 16 if pixel_count < (1800 * 1000) else 32
+  video_codec_args = " ".join(
+    (
+      f"-c:v libx265",
+      f"-pix_fmt yuv420p",
+      f"-aq-mode 4",
+      f'-qmin {qmin} -crf {mps["crf"]} -qmax {qmax}' if mps["targetSize"] <= 0 else "",
+      f'-b:v {mps["targetMaxBitrate"]}k' if cbr is None else f"-b:v {cbr}MB",
+      f'-force_key_frames 1 -g {mp["averageSpeed"] * Fraction(mps["r_frame_rate"])}',
+      # video_track_timescale = 2^4 * 3^2 * 5^2 * 7 * 11 * 13 * 23, max is ~2E9
+      f' -video_track_timescale 82882800',
+      "-refs 4",
+      "-qmin 3",
+      "-qcomp 0.9",
+      "-rc-lookahead 40",
+      "-weightb 1 -weightp 2",
+      "-direct-pred auto",
+      "-b-pyramid none",
+      "-me_method umh",
+      f"-me_range {me_range}",
+      "-psy-rd 1.0:1.0",
+      "-fastfirstpass 1",
+      "-keyint_min 1",
+      "-trellis 2",
+      "-x265-params rc-lookahead=40",
+    )
+  )
+
+  video_output_args = " ".join(("-f mp4", fps_arg))
+  return video_codec_args, video_output_args
+
+
 def runffmpegCommand(
     settings: Settings, ffmpegCommands: List[str], markerPairIndex: int, mp: DictStrAny
 ) -> DictStrAny:
@@ -785,7 +839,7 @@ def mergeClips(cs: ClipperState) -> None:
             inputsTxt.write(inputs)
 
         # TODO: Test merging of clips of different video codecs
-        mergedFileNameSuffix = "mp4" if settings["videoCodec"] == "h264" else "webm"
+        mergedFileNameSuffix = "mp4" if settings["videoCodec"] == "h264" or "h265" else "webm"
         if titlePrefixesConsistent:
             mergedFileName = (
                 f'{mergeTitlePrefix}-{settings["titleSuffix"]}-({merge}).{mergedFileNameSuffix}'

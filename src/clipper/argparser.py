@@ -449,7 +449,7 @@ def getArgParser() -> argparse.ArgumentParser:
         "-vc",
         dest="videoCodec",
         default="vp9",
-        choices=["vp9", "vp8", "h264"],
+        choices=["vp9", "vp8", "h264","h265"],
         help=" ".join(
             [
                 "Select a video codec for video encoding."
@@ -457,6 +457,7 @@ def getArgParser() -> argparse.ArgumentParser:
                 "vp9 is the default and most tested video codec with yt_clipper.",
                 "vp9 generally offers a better quality-size trade-off than vp8.",
                 "h264 was added more recently and is not as well tested as vp9.",
+                "h265 was added more recently and is not as well tested as vp9.",
             ]
         ),
     )
