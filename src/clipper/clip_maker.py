@@ -559,6 +559,10 @@ def getFfmpegVideoCodec(
         )
     if videoCodec == "h264":
         return getFfmpegVideoCodecH264(cbr=cbr, mp=mp, mps=mps, qmax=qmax, qmin=qmin)
+    
+    if videoCodec == "h265":
+        return getFfmpegVideoCodecH265(cbr=cbr, mp=mp, mps=mps, qmax=qmax, qmin=qmin)
+
 
     raise ValueError(f"Invalid video codec: {videoCodec}")
 

@@ -445,7 +445,7 @@ def getArgParser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--video-codec",
+        "--video-codec", 
         "-vc",
         dest="videoCodec",
         default="vp9",
